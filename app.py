@@ -74,7 +74,8 @@ st.markdown("""
 # MODEL LOADER WITH CACHING & FALLBACK
 # ==========================================
 LOCAL_MODEL_PATH = "./results"
-DEFAULT_HF_MODEL = "deepset/roberta-base-squad2"
+DEFAULT_HF_MODEL = "MaiSeddik/roberta-squad-qa"
+
 
 @st.cache_resource(show_spinner=False)
 def load_qa_model(model_name_or_path: str, fallback_hub_model: str):
