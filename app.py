@@ -74,7 +74,7 @@ st.markdown("""
 # MODEL LOADER WITH CACHING & FALLBACK
 # ==========================================
 LOCAL_MODEL_PATH = "./results"
-DEFAULT_HF_MODEL = "MaiSeddik/roberta-squad-qa"
+DEFAULT_HF_MODEL = "deepset/roberta-base-squad2"  # Change to "MaiSeddik/roberta-squad-qa" after uploading your model to HF Hub
 
 
 @st.cache_resource(show_spinner=False)
