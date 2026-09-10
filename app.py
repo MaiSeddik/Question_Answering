@@ -74,7 +74,11 @@ st.markdown("""
 # MODEL LOADER WITH CACHING & FALLBACK
 # ==========================================
 LOCAL_MODEL_PATH = "./results"
-DEFAULT_HF_MODEL = "deepset/roberta-base-squad2"  # Change to "MaiSeddik/roberta-squad-qa" after uploading your model to HF Hub
+DEFAULT_HF_MODEL = "MaiSeddik/roberta-squad-qa"
+
+# Optional: Hugging Face token for private repos
+# Set HF_TOKEN in Streamlit secrets or as environment variable
+HF_TOKEN = st.secrets.get("HF_TOKEN", None) if hasattr(st, "secrets") else os.environ.get("HF_TOKEN", None)
 
 
 @st.cache_resource(show_spinner=False)
@@ -82,6 +86,7 @@ def load_qa_model(model_name_or_path: str, fallback_hub_model: str):
     """
     Loads tokenizer and model with caching.
     Tries local path first; falls back to Hugging Face Hub if missing or invalid.
+    Supports private HF repos via HF_TOKEN in Streamlit secrets.
     """
     source_used = "Local Path"
     active_path = model_name_or_path
@@ -94,23 +99,26 @@ def load_qa_model(model_name_or_path: str, fallback_hub_model: str):
 
     if not local_exists:
         active_path = fallback_hub_model
-        source_used = "Hugging Face Hub Fallback"
+        source_used = "Hugging Face Hub"
+
+    # Build kwargs with token if available (needed for private repos)
+    hf_kwargs = {"token": HF_TOKEN} if HF_TOKEN else {}
 
     try:
-        tokenizer = AutoTokenizer.from_pretrained(active_path)
-        model = AutoModelForQuestionAnswering.from_pretrained(active_path)
+        tokenizer = AutoTokenizer.from_pretrained(active_path, **hf_kwargs)
+        model = AutoModelForQuestionAnswering.from_pretrained(active_path, **hf_kwargs)
         model.eval()  # Set model to evaluation mode
         return tokenizer, model, active_path, source_used, None
     except Exception as e:
-        # If local attempt threw an error, try Hugging Face Hub fallback
-        if active_path != fallback_hub_model:
+        # If primary attempt failed, try the fallback public model without token
+        if active_path != "deepset/roberta-base-squad2":
             try:
-                tokenizer = AutoTokenizer.from_pretrained(fallback_hub_model)
-                model = AutoModelForQuestionAnswering.from_pretrained(fallback_hub_model)
+                tokenizer = AutoTokenizer.from_pretrained("deepset/roberta-base-squad2")
+                model = AutoModelForQuestionAnswering.from_pretrained("deepset/roberta-base-squad2")
                 model.eval()
-                return tokenizer, model, fallback_hub_model, "Hugging Face Hub Fallback", None
+                return tokenizer, model, "deepset/roberta-base-squad2", "Public Fallback (deepset)", None
             except Exception as fallback_error:
-                return None, None, fallback_hub_model, "Failed", str(fallback_error)
+                return None, None, "deepset/roberta-base-squad2", "Failed", str(fallback_error)
         return None, None, active_path, "Failed", str(e)
 
 
