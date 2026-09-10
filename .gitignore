@@ -1,0 +1,26 @@
+# Large model weights (exceeds GitHub 100MB limit)
+*.safetensors
+*.bin
+*.pt
+*.onnx
+*.h5
+*.ckpt
+
+# Local results & checkpoints
+results/
+checkpoint-*/
+
+# Python / Environment
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
